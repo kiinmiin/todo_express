@@ -16,15 +16,28 @@ const readFile = (filename) => {
                 return;
             }
             // Task list data from the file
-            const tasks = data.split("\n")
+            const tasks = JSON.parse(data)
             resolve(tasks) 
+        });
+    })
+}
+
+const writeFile = (filename, data) => {
+    return new Promise((resolve, reject) => {
+        // Get data from file
+        fs.writeFile(filename, data, 'utf-8', err => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            resolve(true) 
         });
     })
 } 
 
 app.get('/', (req, res) => {
     // Task list data from file
-    readFile('./tasks')
+    readFile('./tasks.json')
     .then(tasks => {
         console.log(tasks)
         res.render('index', {tasks: tasks})
@@ -36,20 +49,50 @@ app.use(express.urlencoded({ extended: true}));
 
 app.post('/', (req, res) => {
     // Tasks list data from file
-    readFile('./tasks')
+    readFile('./tasks.json')
         .then(tasks => {
-            // Add form sent task to tasks array
-            tasks.push(req.body.task)
-            const data = tasks.join("\n")
-            fs.writeFile('./tasks', data, err => {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
+            // Adding a new task
+            // Creating new id
+            let index
+            if (tasks.length === 0)
+            {
+                index = 0
+            } else {
+                index = tasks[tasks.length-1].id +1; 
+            }
+            // Create task object
+            const newTask = {
+                "id" : index,
+                "task" : req.body.task
+            }
+            // Add form sent task to array
+            tasks.push(newTask)
+            data = JSON.stringify(tasks, null, 2)
+            writeFile('tasks.json', data)
                 // Redirect to / to see result
                 res.redirect('/') 
-            })
+        })
     })
+
+app.get('/delete-task/:taskId', (req, res) => {
+    let deletedTaskId = parseInt(req.params.taskId)
+    readFile('./tasks.json')
+    .then(tasks => {
+        tasks.forEach((task, index) => {
+            if (task.id === deletedTaskId) {
+                tasks.splice(index, 1)
+            } 
+        })
+        data = JSON.stringify(tasks, null, 2)
+        fs.writeFile('./tasks.json', data, 'utf-8', err => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            // Redirect to / to see result
+            res.redirect('/') 
+        })
+    }) 
 })
 
 app.listen(3001, () => { 
