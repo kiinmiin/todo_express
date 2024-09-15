@@ -39,8 +39,10 @@ app.get('/', (req, res) => {
     // Task list data from file
     readFile('./tasks.json')
     .then(tasks => {
-        console.log(tasks)
-        res.render('index', {tasks: tasks})
+        res.render('index', {
+            tasks: tasks,
+            error: null
+        })
     })
 }) 
 
@@ -48,30 +50,43 @@ app.get('/', (req, res) => {
 app.use(express.urlencoded({ extended: true}));
 
 app.post('/', (req, res) => {
-    // Tasks list data from file
-    readFile('./tasks.json')
+    // Control data from form
+    let error = null
+    if (req.body.task.trim().length == 0) {
+        error = 'Please insert correct task data'
+        readFile('./tasks.json')
         .then(tasks => {
-            // Adding a new task
-            // Creating new id
-            let index
-            if (tasks.length === 0)
-            {
-                index = 0
-            } else {
-                index = tasks[tasks.length-1].id +1; 
-            }
-            // Create task object
-            const newTask = {
-                "id" : index,
-                "task" : req.body.task
-            }
-            // Add form sent task to array
-            tasks.push(newTask)
-            data = JSON.stringify(tasks, null, 2)
-            writeFile('tasks.json', data)
-                // Redirect to / to see result
-                res.redirect('/') 
+            res.render('index', {
+                tasks: tasks,
+                error: error
+            })
         })
+    } else {
+        // Tasks list data from file
+        readFile('./tasks.json')
+            .then(tasks => {
+                // Adding a new task
+                // Creating new id
+                let index
+                if (tasks.length === 0)
+                {
+                    index = 0
+                } else {
+                    index = tasks[tasks.length-1].id +1; 
+                }
+                // Create task object
+                const newTask = {
+                    "id" : index,
+                    "task" : req.body.task
+                }
+                // Add form sent task to array
+                tasks.push(newTask)
+                data = JSON.stringify(tasks, null, 2)
+                writeFile('tasks.json', data)
+                    // Redirect to / to see result
+                    res.redirect('/') 
+            }) 
+        }
     })
 
 app.get('/delete-task/:taskId', (req, res) => {
