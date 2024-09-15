@@ -95,6 +95,31 @@ app.get('/delete-task/:taskId', (req, res) => {
     }) 
 })
 
+app.get('/delete-all-tasks', async (req, res) => {
+    try {
+        const filePath = path.join(__dirname, 'tasks.json');
+        
+        // Read the tasks from file
+        let tasks = await readFile(filePath);
+        
+        // Clear the array (delete all tasks)
+        tasks = [];
+        
+        // Write an empty array to the file
+        fs.writeFile(filePath, JSON.stringify(tasks, null, 2), 'utf-8', (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            // Redirect to / to see result
+            res.redirect('/');
+        });
+    } catch (err) {
+        console.error(err);
+        return;
+    }
+}); 
+
 app.listen(3001, () => { 
     console.log('Example app is started at http://localhost:3001')
 })
