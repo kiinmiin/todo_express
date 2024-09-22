@@ -38,6 +38,9 @@
                             <% console.log(tasks) %>
                             <% tasks.forEach((task) => { %>
                                 <li class="collection-item"><%= task.task %>
+                                <a href="update-task/<%= task.id %>" class=
+                                "secondary-content"><i class="material-icons">create
+                                </i></a>   
                                 <a href="delete-task/<%= task.id %>" class=
                                 "secondary-content"><i class="material-icons">do_not_disturb
                                 </i></a>

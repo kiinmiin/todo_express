@@ -133,7 +133,36 @@ app.get('/delete-all-tasks', async (req, res) => {
         console.error(err);
         return;
     }
-}); 
+});
+
+app.get('/update-task/:taskId', (req, res) => {
+    const taskId = parseInt(req.params.taskId);
+    readFile('./tasks.json')
+    .then(tasks => {
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) {
+            return res.redirect('/');
+        } 
+        res.render('update-task', { task });
+    });
+});
+
+app.post('/update-task/:taskId', (req, res) => {
+    const taskId = parseInt(req.params.taskId);
+    readFile('./tasks.json')
+    .then(tasks => {
+        const taskIndex = tasks.findIndex(t => t.id === taskId)
+        if (taskIndex !== -1 && req.body.task.trim().length != 0) {
+            tasks[taskIndex].task = req.body.task;
+            const updatedData = JSON.stringify(tasks, null, 2);
+            writeFile('./tasks.json', updatedData)
+            .then(() => res.redirect('/')); 
+        } else {
+            res.redirect('/');
+        } 
+    })
+})
+ 
 
 app.listen(3001, () => { 
     console.log('Example app is started at http://localhost:3001')
